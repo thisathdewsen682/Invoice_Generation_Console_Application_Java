@@ -10,7 +10,7 @@ public class Invoice {
 
     private float totalPricePerProduct;
 
-    private float disCount;
+    private float discountPrice;
 
     public static boolean updateQuantityOfProduct(){
         return false;
