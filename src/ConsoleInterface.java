@@ -52,41 +52,54 @@ public class ConsoleInterface {
             }
         }
     private void addProduct() {
-        System.out.println("Adding Product:");
+
+        do {
+            System.out.println("Adding Product:");
+
+            System.out.print("Enter Product Name: ");
+            String name = scanner.next();
+
+            System.out.print("Enter Product Price: ");
+            float price = scanner.nextFloat();
+
+            System.out.print("Enter Product Description: ");
+            scanner.nextLine();
+            String desc = scanner.nextLine();
+
+            System.out.print("Enter Product Quantity: ");
+            int quantity = scanner.nextInt();
+
+            System.out.print("Enter Selling Price: ");
+            float sellingPrice = scanner.nextFloat();
+
+            Product product = new Product();
+            product.setProductName(name);
+            product.setDescription(desc);
+            product.setQuantity(quantity);
+            product.setPurchasePrice(price);
+            product.setSellingPrice(sellingPrice);
+
+            boolean result = product.addProduct(product, conn);
+            if (result){
+                System.out.println("Product Added Successfully");
+            }else{
+                System.out.println("Something wrong");
+            }
+            System.out.print("Do you want to add another product? Yes(y) or No(n): ");
+            scanner.nextLine();  // Consume the newline character
+            String option = scanner.nextLine();
+
+            if (!option.equalsIgnoreCase("y")) {
+                break; // Exit the loop if the user doesn't want to add another product
+            }
+
+        } while (true);
+
+            }
 
 
-        System.out.print("Enter Product Name: ");
-        String name = scanner.next();
-
-        System.out.print("Enter Product Price: ");
-        float price = scanner.nextFloat();
-
-        System.out.print("Enter Product Description: ");
-        scanner.nextLine();
-        String desc = scanner.nextLine();
 
 
-
-        System.out.print("Enter Product Quantity: ");
-        int quantity = scanner.nextInt();
-
-        System.out.print("Enter Selling Price: ");
-        float sellingPrice = scanner.nextFloat();
-
-
-        Product product = new Product();
-
-        product.setProductName(name);
-        product.setDescription(desc);
-        product.setQuantity(quantity);
-        product.setPurchasePrice(price);
-        product.setSellingPrice(sellingPrice);
-
-        boolean result = product.addProduct(product , conn);
-
-
-
-    }
 
         public void manageCustomers() {
             // Add functionality for managing customers
