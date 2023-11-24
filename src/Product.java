@@ -2,8 +2,11 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Product {
+    private int productId;
 
     private String productName;
 
@@ -12,6 +15,10 @@ public class Product {
     private float purchasePrice;
     private float sellingPrice;
     private int quantity;
+
+    public int getProductId() {
+        return productId;
+    }
 
     public String getProductName() {
         return productName;
@@ -33,6 +40,8 @@ public class Product {
         return quantity;
     }
 
+
+
     public void setProductName(String productName) {
         this.productName = productName;
     }
@@ -51,6 +60,10 @@ public class Product {
 
     public void setQuantity(int quantity) {
         this.quantity = quantity;
+    }
+
+    public void setProductId(int productId) {
+        this.productId = productId;
     }
 
     public boolean addProduct(Product product, Connection conn ) {
@@ -104,29 +117,25 @@ public class Product {
         }
     }
 
-    public static void searchAndShowProduct(Connection conn, String searchTag) {
-        String searchSql = "SELECT * FROM product WHERE product_name = ? AND product_id =? ";
+    public static List<Product> searchAndShowProduct(Connection conn, String searchTag) {
+        List<Product> products = new ArrayList<>();
+        String searchSql = "SELECT * FROM product WHERE product_name = ? OR product_id =? ";
 
         try (PreparedStatement statement = conn.prepareStatement(searchSql)) {
             statement.setString(1, searchTag);
             statement.setString(2, searchTag);
 
             try (ResultSet resultSet = statement.executeQuery()) {
-                if (resultSet.next()) {
-                    System.out.println("Product Information:");
-                    System.out.println("ID\tName\t\tDescription\t\tPurchase Price\t\tSelling Price\t\tQuantity");
+                while (resultSet.next()) {
+                    Product product = new Product();
+                    product.setProductId(Integer.parseInt(resultSet.getString("product_id")));
+                    product.setProductName(resultSet.getString("product_name"));
+                    product.setDescription(resultSet.getString("description"));
+                    product.setPurchasePrice(Float.parseFloat(resultSet.getString("purchase_price")));
+                    product.setSellingPrice(Float.parseFloat(resultSet.getString("selling_price")));
+                    product.setQuantity(Integer.parseInt(resultSet.getString("quantity")));
 
-                    do {
-                        System.out.printf("%s\t%s\t%s\t%s\t%s\t%s\n",
-                                resultSet.getString("product_id"),
-                                resultSet.getString("product_name"),
-                                resultSet.getString("description"),
-                                resultSet.getString("purchase_price"),
-                                resultSet.getString("selling_price"),
-                                resultSet.getString("quantity"));
-                    } while (resultSet.next());
-                } else {
-                    System.out.println("Product not found.");
+                    products.add(product);
                 }
             } catch (SQLException e) {
                 System.out.println(e.getMessage());
@@ -134,6 +143,38 @@ public class Product {
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
+
+        return products;
+    }
+
+    //GET PRODUCT BY ID
+
+    public static Product getProductById(Connection conn, int productId){
+        String sql = "SELECT * FROM product WHERE product_id = ?";
+        try(PreparedStatement statement = conn.prepareStatement(sql)) {
+                statement.setInt(1,productId);
+
+                try (ResultSet resultSet = statement.executeQuery()){
+
+                    if (resultSet.next()){
+                        Product product = new Product();
+                        product.setProductId(resultSet.getInt("product_id"));
+                        product.setProductName(resultSet.getString("product_name"));
+                        product.setDescription(resultSet.getString("description"));
+                        product.setPurchasePrice(resultSet.getFloat("purchase_price"));
+                        product.setSellingPrice(resultSet.getFloat("selling_price"));
+                        product.setQuantity(resultSet.getInt("quantity"));
+                        return product;
+                    }
+                }
+
+        }catch (SQLException e){
+
+            System.out.println(e.getMessage());
+        }
+
+
+        return null;
     }
 
 
