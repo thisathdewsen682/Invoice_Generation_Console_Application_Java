@@ -2,9 +2,11 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Customer {
-
+    private String id;
     private String customerName;
     private String email;
     private String address;
@@ -12,6 +14,10 @@ public class Customer {
     private String dateOfBirth;
 
     private String gender;
+
+    public String getId() {
+        return id;
+    }
 
     public String getCustomerName() {
         return customerName;
@@ -35,6 +41,10 @@ public class Customer {
 
     public String getGender() {
         return gender;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     public void setCustomerName(String customerName) {
@@ -83,8 +93,36 @@ public class Customer {
         }
     }
 
+    public static Customer getCustomerById(Connection conn, int custoemrId){
+        String sql = "SELECT * FROM customer WHERE customer_id = ?";
+        try(PreparedStatement statement = conn.prepareStatement(sql)) {
+            statement.setInt(1,custoemrId);
+
+            try (ResultSet resultSet = statement.executeQuery()){
+
+                if (resultSet.next()){
+                    Customer customer = new Customer();
+                    customer.setId(String.valueOf(resultSet.getInt("customer_id")));
+                    customer.setCustomerName(resultSet.getString("customer_name"));
+                    customer.setEmail(resultSet.getString("email"));
+                    customer.setAddress(resultSet.getString("address"));
+                    customer.setContactNumber(resultSet.getString("contact_no"));
+                    customer.setGender(resultSet.getString("gender"));
+                    return customer;
+                }
+            }
+
+        }catch (SQLException e){
+
+            System.out.println(e.getMessage());
+        }
+
+
+        return null;
+    }
+
     //UPDATE CUSTOMER BY ID
-    public boolean updateCustomerById(Customer customer, Connection conn, int id) {
+    public boolean updateCustomerById(Customer customer, Connection conn, String id) {
 
         String updateSQL = "UPDATE customer SET customer_name = ?, email = ?, address = ?, contact_no = ?, dob = ?, gender = ? WHERE customer_id = ?";
 
@@ -95,7 +133,7 @@ public class Customer {
             statement.setString(4, customer.getContactNumber());
             statement.setString(5, customer.getDateOfBirth());
             statement.setString(6, customer.getGender());
-            statement.setInt(7, id); // Assuming the customer_id is a string; adjust accordingly if it's another data type
+            statement.setString(7, id); // Assuming the customer_id is a string; adjust accordingly if it's another data type
 
             int rowsUpdated = statement.executeUpdate();
             return rowsUpdated > 0;
@@ -107,8 +145,8 @@ public class Customer {
 
     //SEARCH AND VIEW CUSTOMER BY TAG METHOD
 
-    public static void searchAndShowCustomer(Connection conn, String searchTag) throws SQLException {
-
+    public static List<Customer> searchAndShowCustomer(Connection conn, String searchTag) throws SQLException {
+        List<Customer> customers = new ArrayList<>();
         String searchSql = "SELECT * FROM customer WHERE customer_name = ? OR customer_id = ?";
 
         try (PreparedStatement statement = conn.prepareStatement(searchSql)) {
@@ -117,27 +155,23 @@ public class Customer {
             statement.setString(2, searchTag);
 
             try (ResultSet resultSet = statement.executeQuery()) {
-                if (resultSet.next()) {
-                    System.out.println("Customer Information:");
-                    System.out.println("ID\tName\t\tEmail\t\tAddress\t\tContact\t\tDOB\t\tGender");
+                while (resultSet.next()) {
+                    Customer customer = new Customer();
+                    customer.setId(String.valueOf(Integer.parseInt(resultSet.getString("customer_id"))));
+                    customer.setCustomerName(resultSet.getString("customer_name"));
+                    customer.setEmail(resultSet.getString("email"));
+                    customer.setAddress(resultSet.getString("address"));
 
-                    do {
-                        System.out.printf("%s\t%s\t%s\t%s\t%s\t%s\t%s\n",
-                                resultSet.getString("customer_id"),
-                                resultSet.getString("customer_name"),
-                                resultSet.getString("email"),
-                                resultSet.getString("address"),
-                                resultSet.getString("contact_no"),
-                                resultSet.getString("dob"),
-                                resultSet.getString("gender"));
-                    } while (resultSet.next());
+                    customer.setContactNumber(resultSet.getString("contact_no"));
 
+                    customer.setDateOfBirth(resultSet.getString("dob"));
 
-                } else {
-                    System.out.println("Customer not found.");
-
-
+                    customer.setGender(resultSet.getString("gender"));
+                    customers.add(customer);
                 }
+            } catch (SQLException e) {
+                System.out.println(e.getMessage());
+            }
 
             } catch (SQLException e) {
                 System.out.println(e.getMessage());
@@ -146,26 +180,24 @@ public class Customer {
             }
 
 
-        }
-
-
+        return customers;
     }
+
+
 
 
     //DELETE CUSTOMER
 
-    public static boolean  deleteCustomer( Connection conn,  int id) throws SQLException {
+    public static boolean  deleteCustomer( Connection conn, String id) throws SQLException {
 
         try{
             String deleteSql = "DELETE FROM customer WHERE customer_id = ?";
             PreparedStatement statement = conn.prepareStatement(deleteSql);
-            statement.setInt(1,id);
+            statement.setString(1,id);
 
             int rowsUpdated = statement.executeUpdate();
 
             return rowsUpdated > 0;
-
-
 
 
         }catch (SQLException e){
